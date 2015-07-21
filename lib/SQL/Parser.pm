@@ -60,6 +60,7 @@ sub parse
     $self->dialect( $self->{dialect} ) unless ( $self->{dialect_set} );
     $sql =~ s/^\s+//;
     $sql =~ s/\s+$//;
+    $sql =~ s/;$//;
     $self->{struct}                    = { dialect => $self->{dialect} };
     $self->{tmp}                       = {};
     $self->{original_string}           = $sql;
@@ -2695,6 +2696,9 @@ sub _verify_tablename
     {
         my @tblnamelist = ( keys( %{ $self->{tmp}->{is_table_name} } ), keys( %{ $self->{tmp}->{is_table_alias} } ) );
         my $tblnames = join( "|", @tblnamelist );
+        # Remove the names of schemas to search the table name
+        $tblnames =~ s/\|.*\./\|/g;
+        $tblnames =~ s/.*\.//g;        
         unless ( $table_name =~ m/^(?:$tblnames)$/i )
         {
             return $self->do_err(
